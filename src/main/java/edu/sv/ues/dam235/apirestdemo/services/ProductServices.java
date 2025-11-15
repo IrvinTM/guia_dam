@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface ProductServices {
     public List<ProductsDTO> getAllProducts();
-    public ProductsDTO crearProducto(CrearProductoDTO productoDTO); // NUEVO MÉTODO
+    public ProductsDTO crearProducto(CrearProductoDTO productoDTO);
 }
