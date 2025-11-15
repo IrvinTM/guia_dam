@@ -1,9 +1,11 @@
 package edu.sv.ues.dam235.apirestdemo.controllers;
 
 import edu.sv.ues.dam235.apirestdemo.dtos.LoginDTO;
+import edu.sv.ues.dam235.apirestdemo.dtos.RegistroDTO;
 import edu.sv.ues.dam235.apirestdemo.dtos.TokenDTO;
 import edu.sv.ues.dam235.apirestdemo.services.AuthServices;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,5 +37,18 @@ public class AuthController {
             log.error("{}", e);
         }
         return null;
+    }
+
+    @PostMapping("/registro")
+    public ResponseEntity<String> registrar(@RequestBody RegistroDTO registroDTO) {
+        try {
+            authServices.registrar(registroDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Usuario registrado exitosamente.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("Error al registrar usuario: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor al registrar usuario.");
+        }
     }
 }
