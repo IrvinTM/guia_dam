@@ -57,11 +57,9 @@ public class AuthController {
         }
     }
 
-    // 👇 NUEVO ENDPOINT LOGOUT
+
     @PostMapping("/logout")
     public ResponseEntity<String> logout() {
-        // Como usas JWT (stateless), aquí solo informas al cliente.
-        // El frontend debe eliminar el token que tiene guardado.
         return ResponseEntity.ok("Logout exitoso. Token eliminado en el cliente.");
     }
 }
