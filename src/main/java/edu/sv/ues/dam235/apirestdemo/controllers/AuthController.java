@@ -11,44 +11,57 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 @Slf4j
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    final private AuthServices authServices;
-    private AuthController(AuthServices authServices) {
+    private final AuthServices authServices;
+
+    // te recomiendo que el constructor sea public
+    public AuthController(AuthServices authServices) {
         this.authServices = authServices;
     }
+
     @PostMapping("/login")
-    public ResponseEntity<TokenDTO> login(@RequestBody LoginDTO
-                                                  authRequest) {
+    public ResponseEntity<TokenDTO> login(@RequestBody LoginDTO authRequest) {
         try {
-            System.out.println("DTO enviado : " +
-                    authRequest.toString());
-            TokenDTO token = authServices.login(authRequest.getUser(),
-                    authRequest.getPass());
+            System.out.println("DTO enviado : " + authRequest.toString());
+            TokenDTO token =
+                    authServices.login(authRequest.getUser(), authRequest.getPass());
+
             if (token == null) {
-                return ResponseEntity.status(401).build();
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             } else {
                 return ResponseEntity.ok(token);
             }
         } catch (Exception e) {
             log.error("{}", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        return null;
     }
 
     @PostMapping("/registro")
     public ResponseEntity<String> registrar(@RequestBody RegistroDTO registroDTO) {
         try {
             authServices.registrar(registroDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Usuario registrado exitosamente.");
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body("Usuario registrado exitosamente.");
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             log.error("Error al registrar usuario: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor al registrar usuario.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error interno del servidor al registrar usuario.");
         }
+    }
+
+    // 👇 NUEVO ENDPOINT LOGOUT
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout() {
+        // Como usas JWT (stateless), aquí solo informas al cliente.
+        // El frontend debe eliminar el token que tiene guardado.
+        return ResponseEntity.ok("Logout exitoso. Token eliminado en el cliente.");
     }
 }
