@@ -4,6 +4,8 @@ import edu.sv.ues.dam235.apirestdemo.dtos.LoginDTO;
 import edu.sv.ues.dam235.apirestdemo.dtos.RegistroDTO;
 import edu.sv.ues.dam235.apirestdemo.dtos.TokenDTO;
 import edu.sv.ues.dam235.apirestdemo.services.AuthServices;
+import edu.sv.ues.dam235.apirestdemo.utilities.TokenBlacklistService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthServices authServices;
+    private final TokenBlacklistService tokenBlacklistService;
 
     // te recomiendo que el constructor sea public
-    public AuthController(AuthServices authServices) {
+    public AuthController(AuthServices authServices, TokenBlacklistService tokenBlacklistService) {
         this.authServices = authServices;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @PostMapping("/login")
@@ -59,7 +63,12 @@ public class AuthController {
 
 
     @PostMapping("/logout")
-    public ResponseEntity<String> logout() {
-        return ResponseEntity.ok("Logout exitoso. Token eliminado en el cliente.");
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            tokenBlacklistService.blacklistToken(token);
+        }
+        return ResponseEntity.ok("Cierre de sesion exitoso, token invalidado");
     }
 }

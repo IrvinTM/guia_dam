@@ -1,6 +1,7 @@
 package edu.sv.ues.dam235.apirestdemo.configs;
 
 import edu.sv.ues.dam235.apirestdemo.utilities.JwtUtil;
+import edu.sv.ues.dam235.apirestdemo.utilities.TokenBlacklistService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,6 +18,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+            private TokenBlacklistService tokenBlacklistService;
+
     Claims claims = null;
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -54,10 +59,15 @@ public class JwtFilter extends OncePerRequestFilter {
         } else {
             token = authorizationHeader;
         }
+
+        if (token == null || tokenBlacklistService.isBlacklisted(token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token invalido");
+        }
+
         if (jwtUtil.validatedTokenPermission(token)) {
             filterChain.doFilter(request, response);
         } else {
-// Token no válido o no proporcionado: enviar error 401
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("No autorizado: Token no es el correcto o no proporcionado");
         }
